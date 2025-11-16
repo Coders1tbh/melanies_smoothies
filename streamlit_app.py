@@ -1,6 +1,7 @@
 # Import python packages
 import streamlit as st
 import pandas as pd
+import requests
 from snowflake.snowpark.functions import col,when_matched
 from snowflake.snowpark.context import get_active_session
 
@@ -69,6 +70,10 @@ if pending_orders:
 
 else:
     st.success("There are no pending orders right now.", icon="👍")
+
+
+smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+st.text(smoothiefroot_response)
 
 
 
