@@ -1,12 +1,11 @@
 # Import python packages
 import streamlit as st
 import pandas as pd
-import requests
 from snowflake.snowpark.functions import col,when_matched
 from snowflake.snowpark.context import get_active_session
 
 # Write directly to the app
-st.title(f"Customize your smoothie:ballon: {st.__version__}")
+st.title(f"Customize your smoothie:cup_with_straw: {st.__version__}")
 st.write(
   """Choose the fruit for your smoothie.
   """
@@ -32,50 +31,26 @@ my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT
 
 
 ingredients_list = st.multiselect('Choose upto 5 ingredients: ', my_dataframe);
-pending_orders = session.table("smoothies.public.orders").filter(col("ORDER_FILLED") == 0).collect()
-if pending_orders:
-    df = pd.DataFrame(pending_orders)
-
-    # Display editable table
-    editable_df = st.data_editor(df, num_rows="dynamic")
-
-    submitted = st.button("Submit")
-
-    if submitted:
-        st.success("Someone clicked the button!", icon="👍")
-
-        og_dataset = session.table("smoothies.public.orders")
-
-        # Convert edited Pandas → Snowpark DataFrame
-        edited_dataset = session.create_dataframe(editable_df)
-
-        try:
-            (
-                og_dataset.merge(
-                    edited_dataset,
-                    (og_dataset["ORDER_UID"] == edited_dataset["ORDER_UID"]),
-                    [
-                        when_matched().update({
-                            "ORDER_FILLED": edited_dataset["ORDER_FILLED"]
-                        })
-                    ]
-                ).collect()
-            )
-
-            st.success("Order(s) updated!", icon="👍")
-
-        except Exception as e:
-            st.error("Something went wrong.")
-            st.write(e)
-
-else:
-    st.success("There are no pending orders right now.", icon="👍")
-
-
-smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-#st.text(smoothiefroot_response.json())
-sf_df  = st.dataframe(data = smoothiefroot_response.json(), use_container_width = True)
+#pending_orders = session.table("smoothies.public.orders").filter(col("ORDER_FILLED") == 0).collect()
 
 
 
+if ingredients_list:
+    ingredients_string= ''
 
+
+
+    for fruit_chosen in ingredients_list:
+        ingredients_string += fruit_chosen + ' '
+    st.write(ingredienta_string)
+
+    my_insert_stmt = """ insert into smoothies.public.orders(ingredients)
+            values ('""" + ingredients_string + """','""" + name_on_order + """')"""
+
+    #st.write(my_insert_stmt)
+
+    if ingredients_string:
+      session.sql(my_insert_stmt).collect()
+      st.success('Your Smoothie is ordered!', icon="✅")
+
+    
